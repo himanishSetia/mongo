@@ -1,0 +1,19 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "Express API",
+  "main": "server.js",
+  "dependencies": {
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "faker": "^4.1.0",
+    "mongodb": "^3.1.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "server.js",
+    "start": "node server.js"
+  },
+  "author": "Himanish Setia",
+  "license": "ISC"
+}
