@@ -99,7 +99,7 @@ router.get('/insert/:db/:collection/:name/:token',function(req,res){
             if(err) throw err;
             var dbo = db.db(req.params.db);
             var i,obj,users=[];
-            dbo.collection(req.params.collection).find({name:req.params.name}).toArray(function(err,result){
+            dbo.collection(req.params.collection).find({token:req.params.token}).toArray(function(err,result){
                 if (err) throw err;
                 if(!result.length){
                     dbo.collection(req.params.collection).insertOne({name:req.params.name,token:req.params.token},function(){
@@ -159,11 +159,19 @@ router.post('/sendPush',function(req,res){
         mongo.connect(url,{ useNewUrlParser: true },function(err,db){
             if(err) throw err;
             var dbo = db.db("m_db");
-            var i,obj,tokens=[];
+            var i,obj,tokens=[],users=[];
+            try{
             dbo.collection("user_data").find({}).toArray(function(err,result){
                 if (err) throw err;
                 for(var val of result) {
-                    console.log("token ",val.token)
+                    console.log("token ",req.body)
+                    var message = { 
+                        "notification": {
+                         "title": "Hello", 
+                         "body": "Hey"
+                        },
+                        "to" : val.token
+                       }
                     const options = {
                         method: 'POST',
                         url: 'https://fcm.googleapis.com/fcm/send',
@@ -171,10 +179,10 @@ router.post('/sendPush',function(req,res){
                       Authorization: 'key=AAAARnBrXk4:APA91bFqwKz9OX2ZZ3DBuKrBZZB_4z8aI9e21dexXfwnhdapz5kbD0-zh5nEqUcUNnjP9oTKWawXLZUcTsMEqQc-ptsjr6gFcH7VsrIw3d5Plu1IA5yFKvSoVK0If1NJFlj7UqJyX8A7',
                       'Content-Type': 'application/json'
                         },
-                        body: { 
+                        body:  { 
                             "notification": {
-                             "title": "Hello World", 
-                             "body": "This is Message from Admin"
+                             "title": req.body.title, 
+                             "body": req.body.message
                             },
                             "to" : val.token
                            },
@@ -184,13 +192,24 @@ router.post('/sendPush',function(req,res){
                       request(options, function (error, response, body) {
                         if (!error && response.statusCode == 200) {
                             console.log(body);
+                            users.push(val.token);
                         }
                     });
                 }
 
 
                 db.close();
-            })        
+                
+                res.status(200).send({
+                    success:'true',
+                    message:'Push Sent Successfully to '+users.length+' users'
+                })
+            })    
+            
+        }
+        catch(ex){
+            	console.log("Catch ",ex)
+        }
         })
     
     
