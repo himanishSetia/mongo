@@ -156,61 +156,52 @@ console.log("ENTERED INSIDE API")
 })
 
 router.post('/sendPush',function(req,res){
-        mongo.connect(url,{ useNewUrlParser: true },function(err,db){
-            if(err) throw err;
-            var dbo = db.db("m_db");
-            var i,obj,tokens=[],users=[];
-            try{
+    
+    var i,obj,tokens=[],users=[];
+
+    mongo.connect(url,{ useNewUrlParser: true },function(err,db){
+        var dbo = db.db("m_db");
+        if(err) throw err;
             dbo.collection("user_data").find({}).toArray(function(err,result){
                 if (err) throw err;
+                console.log("Result ",result)
                 for(var val of result) {
-                    console.log("token ",req.body)
-                    var message = { 
-                        "notification": {
-                         "title": "Hello", 
-                         "body": "Hey"
-                        },
-                        "to" : val.token
-                       }
-                    const options = {
-                        method: 'POST',
-                        url: 'https://fcm.googleapis.com/fcm/send',
-                        headers: {
-                      Authorization: 'key=AAAARnBrXk4:APA91bFqwKz9OX2ZZ3DBuKrBZZB_4z8aI9e21dexXfwnhdapz5kbD0-zh5nEqUcUNnjP9oTKWawXLZUcTsMEqQc-ptsjr6gFcH7VsrIw3d5Plu1IA5yFKvSoVK0If1NJFlj7UqJyX8A7',
-                      'Content-Type': 'application/json'
-                        },
-                        body:  { 
-                            "notification": {
-                             "title": req.body.title, 
-                             "body": req.body.message
-                            },
-                            "to" : val.token
-                           },
-                        json: true  // JSON stringifies the body automatically
-                      }
-                      
-                      request(options, function (error, response, body) {
-                        if (!error && response.statusCode == 200) {
-                            console.log(body);
-                            users.push(val.token);
-                        }
-                    });
+
+                    
+            console.log("token ",req.body)
+            const options = {
+                method: 'POST',
+                url: 'https://fcm.googleapis.com/fcm/send',
+                headers: {
+              Authorization: 'key=AAAARnBrXk4:APA91bFqwKz9OX2ZZ3DBuKrBZZB_4z8aI9e21dexXfwnhdapz5kbD0-zh5nEqUcUNnjP9oTKWawXLZUcTsMEqQc-ptsjr6gFcH7VsrIw3d5Plu1IA5yFKvSoVK0If1NJFlj7UqJyX8A7',
+              'Content-Type': 'application/json'
+                },
+                body:  { 
+                    "notification": {
+                     "title": req.body.title, 
+                     "body": req.body.message,
+                     "icon":"http://cdn.onlinewebfonts.com/svg/img_383214.png"
+                    },
+                    "to" : val.token
+                   },
+                json: true  // JSON stringifies the body automatically
+              }
+              
+              request(options, function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                    console.log("BODY ",body);
+                    users.push(val.token);
+                    
                 }
-
-
+            });
+            console.log("Inside Loop ",users)
+                    
+                }
                 db.close();
-                
-                res.status(200).send({
-                    success:'true',
-                    message:'Push Sent Successfully to '+users.length+' users'
-                })
-            })    
-            
-        }
-        catch(ex){
-            	console.log("Catch ",ex)
-        }
-        })
+            })
+    })
+
+
     
     
     })
